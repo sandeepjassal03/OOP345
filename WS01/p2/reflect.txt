@@ -1,0 +1,110 @@
+/*
+*****************************************************************************
+                        	Workshop-1
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 20/01/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
+
+*****************************************************************************
+In this workshop, I have learned the following concepts:
+
+-- Stages of Execution
+-- command line argument and the corresponding prototype of main()
+-- Internal and external linkages
+*****************************************************************************
+
+Till the last term, I used to know only one prototype of the main function, i.e., its no-argument: 'int main();'. But as I progressed into this term, I learned that main also has a prototype that facilitates us to modify main to accept arguments from the command line. The prototype is as this:
+
+int main(int argc, char** argv);
+
+where argc indicates the number of arguments supplied on the command line by the OS and argv is an array of pointers to C-style null-terminated character strings. Also, the argv[0] element in the second argument always contains the address of the name of the relocatable file that is executed.
+
+While working on the workshop, I came across defining global variables and realized that defining them was generating redefinition errors. This is where I used the concept of external linkage which allows us to declare the name of an entity that is defined in another scope in a different translation unit. We fulfill this process by using the extern keyword. A snippet from my workshop where I made use of extern is as this:
+
+** foodorder.h
+
+extern double g_taxrate;
+extern double g_dailydiscount;
+
+namespace sdds
+{
+   // ...code
+}
+
+** foodorder.cpp
+
+double g_taxrate = 0;
+double g_dailydiscount = 0;
+
+namespace sdds
+{
+   // ...code
+}
+
+In the above snippets, I declared the g_taxrate and g_dailydiscount variables in the header file making it known that these variables have been defined somewhere in the project. And then I finally defined them in the foodorder.cpp file. Doing this prevented the redefinition error and enabled me to make use of these variables in the main function.
+
+Moving further, the workshop also implemented the concept of internal linkage in the display function of the foodorder class. This concept states that an entity can be designed to be visible in a scope within a translation unit and also be invisible to any scope outside this unit. I implemented this concept in the display function of the foodorder class where I needed a counter that was local to the display function but was required to remain in existence throughout the running of the program. By using the static keyword, we make the variable last the entire lifetime of the program, hence the counter variable did not go out of scope once the function exited, but remained in scope till the end of the program.
+
+Snippet:
+
+std::ostream& FoodOrder::display(std::ostream& ostr) const
+{
+	static int counter = 1;
+	// ...code
+}
+
+The difference that I conclude between external and internal linkage is that while external linkage extends the visibility of a variable across all modules by just declaring its existence, internal linkage limits the visibility of a variable within the local scope in which it is declared and defined along with making its lifetime till the end of the program and not till the end of the scope it is defined in.
+
+Lastly, talking about the changes required for part 2, we were supposed to change the m_description variable from being a statically allocated C-style character string to a dynamically allocated string. Whenever a class has a member variable that is dynamically allocated, we need to implement the rule of three, i.e., destructor, copy constructor and copy assignment operator. So, firstly I changed the declaration of the string from a C-style string to a character pointer in the class definition as below:
+
+Changed from: char m_description[24 + 1]{}; TO char* m_description;
+
+Then, I added the declarations of the destructor, copy constructor and copy assignment operator in the public part of the class definition and implemented them as required in the .cpp file as this:
+
+class FoodOrder {
+
+	// ...code
+
+	// Copy Constructor
+	FoodOrder(const FoodOrder& src);
+
+	// Overloaded assignment operator
+	FoodOrder& operator=(const FoodOrder& src);
+
+	// Destructor
+	~FoodOrder();
+	
+	// ...code
+	};
+
+Also, I had to make some alterations in the read function by making use of a temporary instance of the std::string class to store this description and later put it into the actual member variable after allocating memory to it. For this, I made use of the std::getline, std::string::length, and std::string::c_str functions as below:
+
+std::istream& FoodOrder::read(std::istream& istr)
+{
+	std::string temp;
+	
+	// ...code
+
+	std::getline(istr, temp, ',');
+
+	// ...code
+
+	delete[] m_description;
+	m_description = new char[temp.length() + 1];
+	strcpy(m_description, temp.c_str());
+
+	// ...code
+}
+
+Here, the std:: getline accepted three arguments, the istream reference, the string object, and the delimiter. Also, I had to delete m_description in the read before reallocating it so as to prevent any memory leak arising because of the reallocating memory to the pointer before releasing the memory it initially pointed to. Because when I read the main, I found out that the same object named currentOrder was being reused for reading before it is copied to another instance, so it was important to delete it before allocating. By making all these necessary changes, I was able to develop a fully functional code for workshop 1.
+
+

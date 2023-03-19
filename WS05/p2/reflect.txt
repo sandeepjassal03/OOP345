@@ -1,0 +1,163 @@
+/*
+*****************************************************************************
+				Workshop-5 Reflection
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 20/02/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
+
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Functors
+- Lambda expressions
+- Exception Handling
+-----------------------------------------------------------------------------
+
+Function Objects, also known as function objects are simply a pointer to function, meaning thay hold the address to address of a region in memory that has the intructions for a function with the specific signature. In this workshop, I made use of this idea to code a functor for the templated Collection class.
+
+The function setObserver in the Collection class receives as its parameter a pointer to a function that has the same signature as that described in the function pointer. The setObserver function goes like this:
+
+void setObserver(void(*observer)(const Collection<T>&, const T&))
+{
+	m_observer = observer;
+}
+
+where m_observer is: void(*m_observer)(const Collection<T>&, const T&){};
+
+As above, m_observer has the same type as the parameter observer in the function. In the main, for instace, the function is used as this:
+
+	library.setObserver(bookAddedObserver);
+
+where bookAddedObserver is a pointer to a function and the function itself gets paramters of the Collection<Book> and the book that has been added to the collection.
+
+Moving forward, this workshop also made use of another type of functions, called lambda expressions. Lambda expressions are shorthand for function objects. Lambda expressions can be modifiably used based on the condition. For example, a lambda expression can be used without an identifier and if it requires that a lambda expression needs to be used more than once, we can refer to it by a name and that name can be used but only within the body of its host function. In the workshop, we created a lambda expression to update the prices of certain books. The lambda was coded as this:
+
+auto updatePrice = [usdToCadRate, gbpToCadRate](Book& obj) 
+{
+	if (obj.country() == "US")
+	{
+		obj.price() = obj.price() * usdToCadRate;
+	}
+	else if (obj.country() == "UK" && obj.year() >= 1990 && obj.year() <= 1999)
+	{
+		obj.price() = obj.price() * gbpToCadRate;
+	}
+		return obj;
+};
+
+In this lambda expression, we capture two non-local variables by value: usdToCadRate and gbpToCadRate and pass a parameter of type Book by reference and modify its price inside based on the conditions.
+
+Functors and lambda expressions differ a lot in their implementation, although both are constructs in C++. Upon first look, functors and lambdas differ in their syntax: while functors are classes that overload the operator(), lambdas are simply anonmymous functions which syntactically start with [].
+
+While functors are objects that have a defined type, lambdas are again anonymous functions that can be stored in a variable or passed as params to other functions. Also, Lambdas have a limited scope as these are usually defined within a function as opposed to functors that have a larger scope.
+
+Functors are more useful when a complex logic needs to be implemented and the logic is reused multiple times throughout the application. Also, functors are especially essential when they need to be passed to a function as a template parameter. While Lambdas are more useful in scenarios where a simple logic is implemented and the logic is not reused anywhere else in the code. Logics that do sorting, updation of simple data can be implemented in Lambdas.
+
+Moving on, for the SpellChecker module, this module had 3 arrays as attributes. Two of them were parallel arrays and the third was to keep record of all the replacements made in a string for each word in those arrays. 
+
+This module implemented an overloaded 1-arg constructor with param as a string representing filename. This constructor throws an exception if the filename is invalid. Although this exception is vital to let the user know about the missing file, but we might not want to generate an exception for this scenario. A modification to this implementation would be this:
+
+On the constructor side: 
+	Modify the constructor to instead receive as param a reference to ifstream from the client. Assuming that the reference is valid and the constructor has been called only if it was successful. The new prototype would be:
+
+		SpellChecker(std::ifstream& istr);
+
+On the client side: 
+	Instead of instantiating a SpellChecker instance with a filename, instantiate it with an instance of ifstream which is validated to be open for the file before creating the SpellChecker instance. So basically like:
+
+	std::ifstream file(argv[i]);
+	if(file)
+	{
+		// instantiate SpellChecker here as this:
+		SpellChecker sp(file);
+	}
+	else
+	{
+		std::cout << "Cannot open File";
+	}
+
+This will eliminate the use of a try-catch block to handle exception thrown by the constructor. Although this is an idea, it might need some more code to properly work.
+		
+In addition to all these logics, we finally had two modules Book and Movie and these were the Collections instantiated as a Collection using the templated Collection class. 
+
+On first look, these two seemed entirely different modules with their own propersties and operations, but on a closer read, it can be concluded that these modules actually have a same basic functionality, especially in the construction. To make this code even more better, I might think of using inheritance for these modules, where I inherit class Book from the class Movie. Since Book has some additional member attributes and functions as compared to the Movie class. So, while creating class Book I would do something like:
+
+	class Book: public Movie
+	{
+		// class Definition
+	};
+
+Wherein the class definition, I would no longer have to declare attributes like title, year or description. Additionally, I would also be able to make use of the Movie class' constructor while constructing Book. Also,I would not need to overload the operator<< to print all attributes. Although I will have to make some more changes to make it compatible, such as making sure data is read in the correct order as in the file and is printed to the output screen in the correct order as well. 
+
+Also, we have a default constructor for both Movie and Book although we only construct them using the overloaded constructor. No matter what, an overloaded constructor cannot exist by itself. The class has to have either a default constructor or a default value given to the params of the overloaded constructor and the constructor needs to handle when the params are default. For instance, if we were to get rid of the default constructor of the class Movie, we would need these changes:
+
+Movie.h
+	Movie(const std::string& strMovie={});
+
+Movie.cpp
+	Movie::Movie(const std::string& strMovie)
+	{
+		if (strMovie.empty())
+		{
+			m_title = {};
+			m_year = {};
+			m_description = {};
+		}
+		else
+		{
+			std::string copy{ strMovie };
+			m_title = removeSpaces(copy, ',');
+			m_year = stoi(removeSpaces(copy, ','));
+			m_description = removeSpaces(copy, '\n');
+		}
+	}
+
+This constructor handles the execution when the param strMovie is in empty state. 
+Similarly, for Book class, we can implement the class without the default constructor with the following modifications:
+
+Book.h
+	Book(const std::string& strBook={});
+
+Book.cpp
+	Book::Book(const std::string& strBook)
+	{
+		if (strBook.empty())
+		{
+			m_author = {};
+			m_title = {};
+			m_countryOfPublish = {};
+			m_yearOfPublish = {};
+			m_price= {};
+			m_description = {};
+		}
+		else
+		{
+			std::string copy{ strBook };
+
+			m_author = removeSpaces(copy, ',');
+			m_title = removeSpaces(copy, ',');
+			m_countryOfPublish = removeSpaces(copy, ',');
+			m_price = std::stod(removeSpaces(copy,','));
+			m_yearOfPublish = std::stoi(removeSpaces(copy,','));
+			m_description = removeSpaces(copy,'\n');
+		}
+	}
+
+This way, we can get rid of default constructor, but at the end, the overloaded constructor behaves as a default constructor when the if condition holds true. 
+
+Lastly, the templated class Collection was what the client code used to implement the workshop. The Collection class has one template parameter T and contains a dynamically allocated array of type T. The class also implements a function object for an observer which is used everytime a new item is added to the collection. This part to code the functor took me time to understand how does it work and what does it do. For that, I tried understanding the code implementing the use of this functor. Of everything, this was the part where I got stuck for quite a while. 
+Moving on, The class has copy and move construction and assignment disabled and uses an overload of the operator += to add an item to the collection and an overload of the operator -= to remove an item from the collection.
+
+The collection class overloads operator[] twice, out of which one of them throws an exception. The overload `T& operator[](size_t idx) const` throws an exception if the parameter index is greater than or equal to the size of the array, otherwise returns the item at that index.
+
+The class also has a free helper operator<< to print the collection to the screen. This overload is templated for Collection and makes use of the operator<< for the given template type. 
+
+Overall, the workshop provided a good insight into the concept of Error Handling and using Functors and lambdas, along with many other small improvements that I made in my code while progressing from WS 4 to WS 5.

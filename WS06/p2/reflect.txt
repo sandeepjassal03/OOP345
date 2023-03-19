@@ -1,0 +1,74 @@
+*****************************************************************************
+				Workshop-6 Reflection
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 08/03/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Mantaining polymorphic objects using STL containers
+- Using std::iterators for iterations
+- Exception Handling
+-----------------------------------------------------------------------------
+
+STL containers, an advancement in the methods of dealing with data, introduces class templates that are capable of storing and performing certain operations on data. We have a number of containers like forward_list, vectors, arrays and list, to name a few. In this workshop, I made use of the STL container vector to store pointers to a custom type Person in the memory. The vector container is found in the <vector> library, and it is a contiguous block of memory allocated dynamically, hence allocated in the heap. For this case, it was declared as:
+
+		std::vector<Person*> m_persons{};
+
+Since containers are templated, we indicate the type in the <> for the vector. Each element of this vector was a pointer to an object of type Person, which was allocated dynamically using the new keyword followed by the custom construction of the required type as:
+		
+		if (input == 'e' || input == 'E')
+		{
+			returnVal = new Employee(stream);
+		}
+		else if (input == 'p' || input == 'P')
+		{
+			returnVal = new Professor(stream);
+		}
+		else if (input == 's' || input == 'S')
+		{
+			returnVal = new Student(stream);
+		}
+
+Here, returnVal is the address returned by the function buildInstance (Utilities). Since the memory is allocated dynamically, we had to deallocate the memory pointed by each element of the vector m_persons otherwise a memory leak is detected in the application.
+
+Moving further, the data received by various modules such as Employee, Student or Professor was processed in the main by the loadData function. The modules threw exceptions when things went wrong, such as, one that I vividly remember, where the age was of value 'se79' which is an incorrect value. In this case, an error was thrown by the constructor and caught in the loadData where we said the individual wasn't added because of invalid record. However, this just indicated that something is wrong but not exactly what went wrong. In my opinion, we can make use of enum classes by indicating certain values inside it for each type of error such as incorrect age, or invalid ID number, etc. and using these enums to report exceptions to the client. The client code will print a suitable message according to the enum thrown by the module. This can be one way to clearly let the client know about what exactly went wrong.
+
+Furthermore, the vector m_persons stores pointers to the objects of type Person. The Person class is an abstract class that is inherited by other modules like Employee, Student and Professor. We could've actually just used the object itself instead of using a pointer to it while declaring the vector and the list but there are some points to be made sure before using that. First, we need to make sure copy construction and move operations are implemented and are also available in the base class as virtual entities. Also, this might cause an impact on the efficiency of the application as now the objects are being copied to be put in the m_persons array which takes much more time as compared to just assigning pointers to the elements of the array. In a scenario as in the workshop, using pointers is both efficient as well as safe in terms of data loss that might occur while copying because of the objects being polymorphic. This also can be a hassle if the object is modified by the modules or if we pass it to another functions. Hence, although it is a possibility to store elements as objects, but it is better if we use pointers to deal with the objects. 
+
+One of the difficulties I faced while coding this workshop was to figure out how the control moves from employee to professor when the employee is comma delimited for the ID as this:
+
+	
+	Employee::Employee(std::istream& istr)
+	{
+		//...code		
+
+		m_age = stoi(temp);
+		istr.ignore();
+
+		std::getline(istr, temp, ',');
+		removeSpaces(temp);
+
+		if (temp[0] == 'E')
+			m_id = temp;
+		else
+			throw (m_name + "++Invalid record!");
+	}
+
+Here, the getline extracts into temp till a comma is found. Which was concerning because this then was moving onto the next person's data extracting its tag. To figure this out, the stringstream was what I was missing. I tried to accomplish this without using it but found out this was an easier and explainable approach to deal with 2 delimiters. So, I modified the code in utilities.cpp as below:
+	
+		in >> input;
+		std::getline(in, temp, '\n');
+		stream << temp;
+	
+Where in is the input stream object and stream is the std::stringstream object. The input is a character variable that stores in it the tag based on which the specific object is constructed. The rest of the line is written to the stream and passed as the argument to the constructors for further extraction. This way, the delimiters are dealt with appropirately and there is successful ectraction of the data.
+
+To sum up, workshop 6 was a good example for implementing containers, in addition to the dealing with exceptions, especially when elements of the container are polymorphic in nature.

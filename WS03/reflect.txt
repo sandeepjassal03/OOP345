@@ -1,0 +1,97 @@
+/*
+*****************************************************************************
+                        	Workshop-3
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 03/02/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
+
+***********************************************************************
+In this workshop, I have learned the following concepts:
+-- Polymorphism
+-- Templates and template syntax
+-- Templates Specialization
+-- Differentiating overloading and specialization
+***********************************************************************
+
+The last term introduced polymorphism and its various types, along with introducing templates. But it was just introduced and there was not much implementation of them in the workshops. In this workshop, we implemented not only a template function but also things like a templated class and its implementation.
+
+In this workshop, we created three modules, namely Collection, Pair, and Set. Of all these modules, Pair was the only one that had an implementation. This is because of the fact that Collection and Set were modules for templates. As it is known, templates are generalized forms of functions and are not the actual implementation. We create templates so that at compilation time when the specific type is known, the compiler can generate an implementation based on the provided instructions in the form of a template. Putting a template in a .cpp file makes no sense since cpp files are implementation files and in templates, we do not provide an implementation for a certain type, but the functionality that can be adapted to multiple types or even classes without creating any duplicity of the code.
+
+Moving further, the Collection module was created to implement a templated Class Collection, which had 3 member functions, of which 2 were static. In order to make sure that they are defined only once for the Collection class and not for every instance, I made them static, and to make sure that they are initialized only once, I defined them outside the class as this:
+
+template<typename T, unsigned int CAPACITY>
+unsigned int Collection<T, CAPACITY>::m_totalCollections = 0u;
+
+template<typename T, unsigned int CAPACITY>
+T Collection<T, CAPACITY>::dummyObject{};
+
+Also, for the specialization, we were supposed to initialize the dummy object with certain values, which I did like this:
+
+template<>
+Pair Collection<Pair, 100>::dummyObject = Pair("No Key", "No Value");
+
+As we modified Part 1 to fulfill the conditions of Part 2, we were supposed to modify the Collection Module to enable the Inclusion Polymorphism, for which I modified the prototype of the add function to have the keyword virtual as this:
+
+Part 1: bool add(const T& item);
+Part 2: virtual bool add(const T& item);
+
+Also, I included an empty body destructor as well for this purpose.
+
+For the Pair Module, which was partially supplied, I had to make some new functions and overload some of its operators to make it compatible with the Collection class. In order to do that, I created a default constructor, a display function (query), a boolean == operator (query), and an insertion operator (<<). 
+
+I overloaded the << operator to make it compatible when used with the Collection module. At first, I tried to specialize the Collection module to be able to deal with when the object specified is an instance of the Pair class. But as I progressed, I realized that specialization for the Pair class demanded me to create an insertion operator for Collection, and then specialized for Pair class. But still, it didn't work as expected since it was recursively calling the same operator overload. So, I went through the material again and realized that creating an overload of the insertion operator instead of the specialization would be a better option. I decided to make it a helper and not a member, although I created a query display function as a member function of the Pair Class as this:
+	
+std::ostream& Pair::display(std::ostream& ostr) const
+{
+	ostr.width(20);
+	ostr << m_key;
+	ostr << ": ";
+	ostr << m_value;
+	return ostr;
+}
+
+Also, the insertion operator that I overloaded took two parameters, the first one as a reference to ostream and the second parameter as a reference to an instance of the Pair class as below:
+
+std::ostream& operator<<(std::ostream& ostr, const Pair& src)
+{
+	src.display(ostr);
+	return ostr;
+}
+
+As above, I used the display function of the Pair class to insert the content into the stream.
+
+While working on the Set module, in the line below:
+	if (item == (*this)[i])
+
+I was getting an error that no suitable overload for item and *this, which is when I realized that I need to overload the ==operator in the Pair class, which I did as below:
+
+bool Pair::operator==(const Pair& p2) const
+{
+	return (this->m_key == p2.m_key);
+}
+
+As per the instructions, two objects of Pair are equal if their keys match. So I overloaded the == operator as per this instruction.
+
+Lastly, in the Set Module, we needed to specialize the add function for a double value because there could be 2 values that are within an epsilon, meaning in a way such that the difference between the two values is less than a specific value (here 0.01). We take this into account for any rounding errors that might appear at the compilation. To accomplish this, I used the std::abs() function as below: 
+
+template<>
+bool Set<double>::add(const double& item)
+{
+	... code
+	if (std::abs(item - (*this)[i]) <= 0.01)
+	{
+		found = true;
+	}
+	... code
+}
+
+Summarizing, I found this workshop to be descriptive as it helped me to figure out many questions that I had about templates and their application in actual code.

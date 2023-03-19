@@ -1,0 +1,123 @@
+/*
+*****************************************************************************
+                        	Workshop-2
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 28/01/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
+
+*****************************************************************************
+In this workshop, I have learned the following concepts:
+
+-- Copy Construction and copy assignment operator
+-- Move semantics
+-- How Move is better than copy
+*****************************************************************************
+
+Till the last term, whenever a class had a member which was allocated dynamically, we were supposed to implement the RULE OF 3: Which states that in the situation above, a class must have copy constructor, copy assignment operator and destructor implemented. But this process of copying data from one object to another object using initialization or using the = operator consumes time which increases the overall runtime. In order to resolve this and optimize the runtime, Move construction and operators are introduced.
+
+Move operators are used but with a condition, which is that only in the event that an instance of a class is no longer to be referred to once it has been copied, we may move the instance's resources by copying their addresses instead of their contents. This is a more efficient way than the usual copy semantics.
+
+The prototype of a move constructor is also different from a copy constructor; the prototype I used for the workshop is as below:
+
+		ProteinDatabase(ProteinDatabase&& src);
+
+The move operators receive rvalue reference to the source object.
+
+The move assignment operator prototype is as this:
+
+		ProteinDatabase& operator=(ProteinDatabase&& src);
+
+The move constructor is implemented as:
+	
+	ProteinDatabase::ProteinDatabase(ProteinDatabase&& src):ProteinDatabase()
+	{
+		*this = std::move(src);
+	}
+
+Here, std::move() is to indicate that the object passed in the parameter is being moved to a new object. This is used to convert a non-rvalue reference to one which is an rvalue reference.
+
+As I implemented the constructors specified in parts 1 and 2, I found out that there is a reason behind preferring move over copy, and it's because move requires a lot less time than copy does.
+
+Implementing the move operations did not require much time and effort, and with these implemented, from now on we follow the RULE OF 5: which is that for every class with resources, copy constructor, move constructor, copy assignment operator, move assignment operator and destructor must be implemented.
+
+While working on the workshop, the main difficulty that took me a couple of days to resolve was the reading of contents from the file. I was not sure how to iterate through the file, should it be character by character or as a whole line. So just to give a shot, I iterated the whole file for one-time character by character to fund out the total sequences to be read and stored. On doing this, I found out that the stream could only find out less than half of the total sequences, which was a clear hint that this wasn't the correct method.
+
+So, I tried the other way around extracting the whole line and checking if its first character is a special character '>' that indicates a new protein sequence. I implemented this functionality as this:
+	
+			do
+			{
+				std::getline(fstr, temp, '\n');
+
+				if (temp[0] == '>')
+				{
+					++m_size;
+				}
+			} while (fstr); 
+
+where fstr is the instance of ifstream. 
+
+The next step was to re-read the file for the contents. There were again two ways to begin: Either create a new instance of ifstream to read the file or do something with the existing one to make it read again from the beginning. Upon researching, I found out that by clearing the instance and seeking it back to the first position of the file, I could re-use it. To accomplish that, I did this:
+		
+	fstr.clear();
+	fstr.seekg(0, std::ios::beg);
+
+Where clear() is used to clear the stream and seekg() is used to set the position of the next character to be extracted, in this case, the 1st character.
+
+Then, to read the content, I made use of three temporary instances of std::string. The implementation is as this:
+
+		std::string line{};
+		std::getline(fstr, line, '\n');
+		while (fstr.peek() != EOF && line[0] == '>') 
+		{
+			bool flag = true;
+			std::string sequence{}, temp{};
+
+			while (flag && fstr)
+			{
+				std::getline(fstr, temp, '\n');
+				if (temp[0] != '>')
+				{
+					sequence += temp;
+				}
+				else
+				{
+					line = temp;
+					flag = false;
+				}
+			}
+
+			m_database[index] = sequence;
+			++index;
+		}
+
+Here, I extract one line from the file in the 'line' string and I begin in a loop, where the conditions are set such that it loops until EOF is reached and the first character in the line string remains '>'.
+
+Then I have another loop with conditions saying to loop until the boolean flag remains true and fstr does not fail.
+
+I get a line and check: if the first character of that line is not '>', I concatenate it to the sequence string. If the first character is '>', it is an indication that the sequence has ended and another sequence is coming up, which is the point where I need to exit the inner loop and set the line to the temp string. Here, after the loop exits, I set the string at the ongoing index in the m_database to be the sequence string. This way, I iterate throughout the file and extract all the sequences from the file.
+
+This was all about the concepts I learned in this workshop. Of everything, the most important being that upon execution, I found out that it took a lot less time to copy contents using move than actually copying the resources. This is crucial because copying requires the compiler to allocate memory and then iterate through the resource and copy its contents while in the move, we copy only the addresses and not the whole resource, which saves a lot of time, resulting in shorter run times. The result from an execution is as below echoing the statements above:
+	
+
+--------------------------
+Execution Times:
+--------------------------
+  0-arg Constructor         725800nanoseconds
+  1-arg Constructor     2660476601nanoseconds
+  Copy Constructor       159869162nanoseconds
+  Copy Assignment        163904958nanoseconds
+  Move Constructor          981399nanoseconds
+  Move Assignment           571400nanoseconds
+  Destructor             164753958nanoseconds
+--------------------------
+
+As evident from above results, move operations are more efficient and quicker than the copy operations.

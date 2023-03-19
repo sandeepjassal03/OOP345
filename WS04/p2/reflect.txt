@@ -1,0 +1,226 @@
+/*
+*****************************************************************************
+					Workshop-4
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 11/02/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
+
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Types of relationships between classes
+- Differences between the relationships
+- What facts differentiate these relationships
+-----------------------------------------------------------------------------
+
+The concept of Relationships between classes is a new concept introduced this term. This concept in OOP helps us identify the degree of ownership among classes. I might have seen this concept before but would've never realised it was this.
+
+Between the classes Child and Toy, as we can see the Child class has an array of Toy pointers (snippet below) and each member of this array is managed and allocated within the Child class. Because of this reason, it is clear that Child and Toy have Composition between them. In this case, an object of the Child class cannot live on its own.
+
+In class Child:
+	
+class Child
+{
+	PtrToToy* m_toyList{};
+};
+
+Where PtrToToy is an alias for the type const Toy*.
+
+In the constructor of the class Child:
+
+Child::Child(std::string name, int age, const Toy* toys[], size_t count)
+{
+	m_name = name;
+	m_age = age;
+	m_size = count;
+
+	m_toyList = new PtrToToy[m_size];
+		
+	for (auto i = 0u; i < m_size; ++i)
+	{
+		m_toyList[i] = new Toy(*toys[i]);
+	}
+}
+
+As above, we can see that the Child class not only manages the array of pointers but also manages the object pointed by each element of the array as well. Since the Child class owns these objects, it is in composition relation with Toy class. To further explain it, the destruction of an instance of the Child class comes in handy:
+
+Child::~Child()
+{
+	deallocate();
+}
+
+void Child::deallocate()
+{
+	if (m_toyList)
+	{
+		for (auto i = 0u; i < m_size; ++i)
+		{
+			delete m_toyList[i];
+		}
+		delete[] m_toyList;
+	}
+}
+
+As the rules of a composition relationship state, that a composer object must destroy its components object at the time of or before its own destruction. Hence the implemented destructor where in the loop, every object pointed by the element of the array is deleted before deleting the array of pointers.
+
+Moving on, between the classes ConfirmOrder and Toy, as we can see, the ConfirmOrder class also has an array of Toy pointers (snippet below). But as opposed to the Child class, the ConfirmOrder class doesnot manage the objects pointed by the elements of the array. Because of this reason, it is clear that ConfirmOrder and Toy have Aggregation between them. In this case, the array may live on its own independent of the objects it points to.
+
+In class ConfirmOrder:
+	
+class ConfirmOrder
+{
+	PtrToToy* m_toyList{};
+};
+
+Where PtrToToy is an alias for the type const Toy*.
+
+This class implements no overloaded constructor since it does not manage the objects pointed by the elements of the array. The class uses += and -= operator (snippet below) to manage the array of pointers which solely stores addresses of the objects of Toy class.
+
+ConfirmOrder& ConfirmOrder::operator+=(const Toy& toy)
+{
+	//...code
+
+	PtrToToy* temp = new PtrToToy[m_size + 1];
+	for (auto i = 0u; i < m_size; ++i)
+	{
+		temp[i] = m_toyList[i];
+	}
+	temp[m_size] = &toy;
+	++m_size;
+		
+	if (m_toyList)
+	{
+		delete[] m_toyList;
+	}
+
+	m_toyList = temp;
+	temp = nullptr;
+	++m_size;
+	
+	//...code
+}
+
+ConfirmOrder& ConfirmOrder::operator-=(const Toy& toy)
+{
+
+	//... code
+	
+	PtrToToy* temp = new PtrToToy[m_size - 1];
+
+	index = 0;
+	for (auto i = 0u; i < m_size; ++i)
+	{
+		if (m_toyList[i] != nullptr)
+		{
+			temp[index] = m_toyList[i];
+			index++;
+		}
+	}
+	if (m_toyList)
+	{
+		delete[] m_toyList;
+	}
+
+	--m_size;
+	m_toyList = temp;
+	temp = nullptr;
+	
+	//... code
+}
+
+As above, the operators deallocate memory and allocate memory just for the array of pointers and not for the objects the elements point at. To further elaborate, the destructor too just destroys the array of pointers and not the elements it points at since the class does not manage those objects.
+
+ConfirmOrder::~ConfirmOrder()
+{
+	delete[] m_toyList;
+}
+
+Due to above reasons, the relation between ConfirmOrder and Toy is an aggregation.
+
+Talking about their copy constructors, which use the assignment operator overload, the Child class and ConfirmOrder class have completely different implementations as below:
+
+Child& Child::operator=(const Child& src)
+{
+	if (this != &src)
+	{
+		if (m_toyList)
+		{
+			for (auto i = 0u; i < m_size; ++i)
+			{
+				delete m_toyList[i];
+			}
+			delete[] m_toyList;
+		}
+
+		m_name = src.m_name;
+		m_age = src.m_age;
+		m_size = src.m_size;
+
+		if (src.m_toyList)
+		{
+			m_toyList = new PtrToToy[m_size];
+			for (auto i = 0u; i < m_size; ++i)
+			{
+				m_toyList[i] = new Toy(*src.m_toyList[i]);
+			}
+		}
+	}
+	return *this;
+}
+
+(For explanation purposes, I replaced the deallocate function call with the actual code inside).
+
+ConfirmOrder& ConfirmOrder::operator=(const ConfirmOrder& src)
+{
+	if (this != &src)
+	{
+		delete[] m_toyList;
+
+		m_size = src.m_size;
+
+		m_toyList = new PtrToToy[m_size];
+		for (auto i = 0u; i < m_size; ++i)
+		{
+			m_toyList[i] = src.m_toyList[i];
+		}
+	}
+
+	return *this;
+}
+
+As evident above, the Child class deletes every Toy object it maintains from the array and then deletes the array itself while the ConfirmOrder class just deletes the array since that is the only resource managed by it.Also, during deep-copying, Child constructs a new instance of the Toy while ConfirmOrder just copies the addresses from the src.
+
+For the move constructors, they resemble their implementations except the fact that the deallocation for Child is for every Toy object and then the array while it is just the array for the ConfirmOrder class.
+
+Of all the workshop code, the only place that took me time to understand, research and code is the overloaded constructor of the Toy class. For which, I had to figure out a way to remove the leading and trailing spaces. TO accomplish this, I made use of two functions, as implemented in the snippet below:
+
+Toy::Toy(const std::string& toy)
+{
+	//...code
+
+	index = copy.find(':');
+	temp = copy.substr(0, index);
+
+	auto first = temp.find_first_not_of(' ');
+	auto last = temp.find_last_not_of(' ');
+
+	m_name = temp.substr(first, (last - first) + 1);
+		
+	copy.erase(0, index + 1);
+
+	//...code
+}
+
+The find_first_not_of() function finds the index in the string starting from the beginning where the character is not a space. So no matter how many spaces before an alphabet, it eliminates all of them, hence leading spaces removed. On the other hand, find_last_not_of() function finds the index in the string starting from the end where the character is not a space, hence removing all the trailing spaces. 
+
+Of all the methods that I found after researching such as using functions remove() from the algorithm library or the remove_if() function or the find_if() functions, I found this method more readable and easily understandable. 
+
+Overall, this workshop was real intuitive in that not only did it helped me understand the relationships between classes, but also helped me to understand that discovering what needs to be done by what class is what relations is all about.
