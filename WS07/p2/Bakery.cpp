@@ -153,14 +153,17 @@ namespace sdds
 
 	std::list<BakedGood> Bakery::outOfStock(BakedType type) const
 	{
+		auto check = [type](BakedGood src) {
+			return type == src.m_bakeType && src.m_quantity == 0;
+		};
 		// std::count_if(): returns the number of elements in the collection that satisfy the condition of the lambda expression.
-		auto size = std::count_if(m_items.begin(), m_items.end(), [type](BakedGood src) {return type == src.m_bakeType && src.m_quantity == 0; });
+		auto size = std::count_if(m_items.begin(), m_items.end(), check);
 
 		// Create a temporary list, giving it the size returned by std::count_if
 		std::list<BakedGood> temp(size);
 
 		// std::copy_if(): Copies the elements from m_items into temp that satisfy the condition of the lambda expression
-		std::copy_if(m_items.begin(), m_items.end(), temp.begin(), [type](BakedGood src) {return type == src.m_bakeType && src.m_quantity == 0; });
+		std::copy_if(m_items.begin(), m_items.end(), temp.begin(), check);
 		return temp;
 	}
 	std::ostream& operator<<(std::ostream& out, const BakedGood& b)

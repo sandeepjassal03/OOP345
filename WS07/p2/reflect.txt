@@ -12,3 +12,58 @@ I have done all the coding by myself and only copied the code that my
 professor provided to complete my workshops and assignments.
 *****************************************************************************
 
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Using numeric library to calculate totals
+- Using algorithm library to sort data as required
+- Handling files with STL containers
+-----------------------------------------------------------------------------
+
+Workshop 7 was based on using STL algorithms to use, handle and manipulate data related to a bakery. In this workshop, we made use of 3 different custom types: an enum class, a structure and finally a class. The class consisted of a collection of the structure type and an attribute to specify the bake type using the enum class. The overloaded 1-argument constructor received a const char* as the filename and it read data from file line by line and extracts all tokens from it using the extractField function defined in the utilities class. Since the collection is a std::vector, we did not have to deal with any memory allocation or deallocation.
+
+Moving further, part 2 required us to do some tasks using some functions on the data in the collection. Those were:
+
+1. void sortBakery(std::string sorter): This function was used to sort bakery in an ascending order based on the parameter supplied, such as the description, price, shelfLife or stock. I used the std::sort defined in the <algorithm> that takes 3 parameters, the first two specifying the range of elements to sort in the inclusion format as [first, last) and the 3rd one as the execution policy that defines the criteria based on which the collection will be sorted. The execution policy I used was this:
+
+[](const BakedGood a, const BakedGood b) {return a.m_description < b.m_description; }
+
+It was a lambda expression that took 2 params of type BakedGood (structure) and compared them based on their description, for instance, sorting them in an ascending order.
+
+The collection was also sorted based on the shelfLife, stock or price by using the same execution policy, just using the specific attribute for the sorting.
+
+2. bool inStock(std::string description, BakedType type) const: This function was used to return a boolean value returned from an algorithm that checked whether an item was in stock, i.e., if m_quantity > 0 for that item, while also making sure that the item being checked is the one requested by the client in the params. To serve this purpose, I used the std::any_of algorithm defined in <algorithm> header. This algorithm takes 3 parameters, the first two specifying the range of elements to sort in the inclusion format as [first, last) and the 3rd one as the execution policy that defines the criteria based on which the collection will be checked. The execution policy that checks the elements if they satisfy the condition is:
+
+[description, type](const BakedGood& src) { return src.m_bakeType == type && src.m_description == description && src.m_quantity > 0;}
+
+This lambda captures description and type from the local scope by value and takes a constant reference to BakedGood to check the conditions above.
+
+3. std::list<BakedGood> outOfStock(BakedType type) const: This function was used to return a list of all items in the collection that were out of stock, i.e., when m_quantity == 0. It takes a parameter to specify what Baked Good products to display, i.e., either a Bread or a Pastry. To achieve this, I used 2 STL algorithms from <algorithm> header. The first one was std::countif algorithm that takes 3 parameters: the first two specifying the range of elements to sort in the inclusion format as [first, last) and the 3rd one as the functor or a lambda that defines the criteria based on which the collection will be checked for items that are out of stock and returns us the number of items which aren't in stock. This was used so that I could assign size to the list to return. The second algorithm I used was std::copy_if that copies all elements into the given container based on the execution policy defined next. This algorithm takes 4 params: the first two specifying the range of elements to sort in the inclusion format as [first, last), the 3rd one as an iterator to the first position of the sequence and the 4th one as the execution policy that defines the criteria based on which the collection will be checked. The lambda expression that I used was:
+
+[type](BakedGood src) {return type == src.m_bakeType && src.m_quantity == 0; }
+
+Where type is a value of enum class BakeType and is captured from the local scope by value. It also receives as a parameter an object of BakedGood and checks if the BakeType match and the stock level is 0. Since both count_if and copy_if checked for same criteria, this lambda was used in both of them.
+
+4. std::vector<BakedGood> combine(Bakery& src): This function was used to return a std::vector of size equal to the total of the size of current object's collection and the collection of the reference parameter object. To accomplish this, I used std::merge algorithm defined in the <algorithm>. But before I could merge the collections, I had to sort the collections of both the classes based on their price, since the final collection was sorted on price in ascending order. For this, I used the sortBakery function defined in the class using "Price" as the value to the parameter. Then I created a temporary vector with the size = (m_items.size() + src.m_items.size()), where m_items is the collection and src is the parameter name. Then I finally used the std::merge algorithm that takes 6 parameters: the first two specifying the range of elements to sort in the inclusion format as [first, last) for the current object, the next two specifying the range of elements to sort in the inclusion format as [first, last) for the parameter object, the 5th as an iterator to the first position of the new sequence and the 6th one as the execution policy that defines the criteria based on which the collection will be merged in a specific order. Again, I used a lambda expression to accomplish this as:
+
+[](const BakedGood a, const BakedGood b) { return a.m_price < b.m_price; }
+
+Where a and b are two const objects of BakedGood type and this lambda returns the boolean result of the expression used inside the lambda.
+
+Lastly, I also used the std::accumulate algorithm from the <numeric> library that was used to calculate the total stock of all products and the total Price of all items which otherwise I would have to implement using manual loops. The std::accumulate algorithm takes 4 parameters, the first two as range specif…., the 3rd being the init value or the value to start accumulating from and the 4th parameter as a execution policy that defines what needs to be accumulated. I used the lambdas below to calculate the totals:
+
+To calculate total Stock: [](auto total, const BakedGood& obj) { return total + obj.m_quantity; }
+To calculate total Price: [](auto total, const BakedGood& obj) { return total + obj.m_price; }
+
+Moving further, STL algorithms are a better option over implementing the functionality using manual loops. The reason is because these algorithms are reusable & can be used with different types of Data without the need of writing the same code over and over again to fulfill the same purpose. This decreases redundancy and duplicity of code.For instance, If I were to do the functionality for std::accumulate manually, I would have to do the same loop twice to achieve what I did using the algorithm. The loop would look somewhat like this:
+
+int total{};
+for (auto i = 0u; i < m_items.size(); ++i)
+{
+	total += m_items[i].m_quantity;
+}
+
+There are possibilities of errors in the manual implementation of the functionality using loops in case the calculation involves some complex behaviour. By using STL algorithms,I also evaded making any syntactic errors. On top of everything, these algorithms are not only optimized for performance and time, but also these are much more safer in terms of errors such as buffer overflows or read access violations. Lastly, these algorithms are also standardized in C++, increasing the possibility of more wider usability in scenarios as and when needed.
+
+Going ahead, I used a vector to implement the collection m_items for the class Bakery. When I have to sort the collection, I use the std::sort algorithm defined in the <algorithm> header. However, if I were to use a list instead of a vector, I will have to make changes in the implementation. The std::sort algorithm is not directly applicable to std::list containers since elements of a list are not stored in contiguous memory and hence it does not allow random access to elements directly. To get std::list to work with std::sort algorithm, we will have to use iterators for the list to allow random access to elements. Although this is a possible way out, but it is not the most efficient way as there needs to be a conversion from list iterators to random access iterators. If we had no choice other than using the list, we could also use the std::list::sort function defined for sorting the lists. This is a more efficient way to sort a list instead of using the std::sort algorithm. So, in my opinion, we will have to make changes in the implementation as lists are not completely compatible with std::sort as compared to std::vector. 
+
+To conclude, workshop 7 provided a good insight into the uses of the algorithms and also how these algorithms are more efficient and safer than using the manual loops to achieve functionality.

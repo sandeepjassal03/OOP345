@@ -24,7 +24,6 @@ professor provided to complete my workshops and assignments.
 #include <list>
 #include <algorithm>
 #include <numeric>
-#include <functional>
 
 namespace sdds
 {
