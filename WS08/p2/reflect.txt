@@ -1,0 +1,58 @@
+*****************************************************************************
+				Workshop- Reflection
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 24/03/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Smart Pointers
+- Use of STL smart pointers to handle data
+- Singleton Classes
+- Implementing a Singleton class
+-----------------------------------------------------------------------------
+
+Workshop 8 was based on implementing the concept and the use of Smart Pointers. Smart Pointer is a concept that allows us to explicitely manage a resource automatically. It is in reality a proxy for a raw pointer to the resource but it appears as a raw pointer. Smart pointers implement the Resource Acquisition Is Initialization (RAII) idiom of OOP, which suggests that  the resource is acquired at the initialization time when memory is being allocated for the pointer itself.
+
+Smart pointers are nothing but a custom-defined class whose sole job is to manage the resource its pointer points at. These can be implemented manually, however, for the purpose of this workshop, I used the std::shared_ptr smart pointer to implement the requirement by declaring the static member as a shared_ptr of type Database<T>:
+
+		static std::shared_ptr<Database> m_address;
+
+This was intialised to a nullptr as below:
+	template<typename T>
+	std::shared_ptr<Database<T>> Database<T>::m_address = nullptr;
+
+Although STL offers another type of smart pointer known as std::unique_ptr, but still it could be implemented for certain reasons. Firstly, in the main function, many times, a variable was used to hold the reference for the instance, and since unique_ptr does not allow referencing using another variable, it results in a compilation error. Unique_ptr only allows one object to have ownership of the resource. However, as the main is implemented, this template could not be used. This is where shared_ptr provides a solution. Shared_ptr template allows multiple objects to hold a reference to the same Database instance and in addition to this, it also makes sure that the instance is destroyed only when no more references to the instance exist. This is essentially useful in this scenario since many objects in the main require access to the same instance and it would have been inconvinient and cumbersome to make sure that all objects release the pointer before the instance destruction happens.
+
+Moving further, part 1 of the workshop was a implementation assuming the values of the keys in the file are std::strings. However, moving from part 1 to 2 required us to modify it to a templated class. This update required a couple of changes. Firstly, since the class is now a templated class, all the implementations had to be moved from the .cpp file to the .h file, leaving .cpp file empty. Also, for the parallel arrays, since value was templated, tht type had to be changed from std::string to template type T. Anywhere else in the code where value was used in any form such as when extracting it from file, or getting value corresponding to the key or even setting value, the type had to be changed accordingly.
+
+Additionally, some minor changes to the class name was made in a scope resolution or a type specifier, changing it from simply Database to Database<T>. Lastly, a function encryptDecrypt was added, but it had an empty body and was only specialized for long long and std::string types as this: 
+
+Empty Body Declaration: void encryptDecrypt(T& value){}
+
+Specialized Prototypes:
+	std::string
+		template<>
+		void Database<std::string>::encryptDecrypt(std::string& value);
+
+	long long
+		template<>
+		void Database<long long>::encryptDecrypt(long long& value);
+
+In the current implementation, the class only allowed one instance to exist throughout the program. The address of this instance was stored in a class variable and a getInstance function was used to create the first instance if it does not exist and in all other cases returns the class variable. Such an implementation of the class that allows only one instance creation is known as a Singleton class. In this workshop, we made use of a static member to achieve this functionality. However, in my research, I found another method to do this and that is known as Dependency Injection. This simply means that to achieve singleton behaviour, we create another class that is just for handling the single instance. This single instance from the class is then passed as reference to the class constructor in which we want singleton behaviour, in our case, the Database class. The singleton class makes sure that only one instance is created and the get function for this class repeatedly returns the same instance on numerous calls.
+
+Going ahead, the database class has a resource attribute which is its own instance, yet there was no need to implement the copy or move operations for this class. This is because although the resource belonged to the class Database, but it was managed using the STL smart pointer std::shared_ptr. The shared_ptr template class has implemented the move and copy operations for the resource it manages. Whenever a copy is created, the reference count for the resource is increased and it is decremented whenever an object is destroyed or moved to keep track of current objects holding the reference of the instance. Hence, the copy and move operation implementation created by the compiler correctly manages the resource and allowing us no to worry about custom implementations for the resource management and hence it is not a bug. Had it been a std::unique_ptr for the instance, we would have to implement in that case since it only allows moving of ownership and no copying. 
+
+The construction of this class was limited to just one by creating a private instead of a public constructor and assigning the address to the shared_ptr class variable. Since it was templated, it could be used for dealing with different types and each type would have a different implementation auto-generated by the compiler based on the template type. Since the main does it for two types, std::string and long long, the instance is constructed twice, one for std::string type and the other one for long long type. 
+
+Also, since the class has two instances for different template types, it also has two destructions and 2 backup files correspondingly, named data_str.txt.bkp.txt and data_num.txt.bkp.txt for std::string and long long types respectively. It is clearly interpretable as both those instances are different as evident from the addresses they point at. Also, since two files are generated with different data, it is clear that the singleton behaviour is existent and the two instances are because of two different template types being used.
+
+Conclusively, this workshop provided a deep insight into the use of smart pointers and how shared_ptr and unique_ptr, although used for the same purpose of resource management, deliver different functionality based on their characteristics.
