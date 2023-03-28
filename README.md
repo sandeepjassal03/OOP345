@@ -5,8 +5,8 @@
 
 ## SCORES:
 
-WS1: 10/10
-WS2: 10/10
-WS3: 9/10 (m_totalCollections should not be static as each instance could have different number of items)
-WS4: 10/10
+WS1: 10/10\
+WS2: 10/10\
+WS3: 09/10 (m_totalCollections should not be static as each instance could have different number of items)\
+WS4: 10/10\
 WS5: 10/10
