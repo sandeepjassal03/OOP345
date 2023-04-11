@@ -2,6 +2,21 @@
 // process_data.cpp
 // 2021/1/5 - Jeevan Pant
 
+/*
+*****************************************************************************
+							Workshop-9
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 28/03/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+*/
 
 #include "process_data.h"
 #include <algorithm>
@@ -38,11 +53,8 @@ namespace sdds_ws9 {
 		data = new int[total_items];
 		for (auto i = 0; i < total_items; ++i)
 		{
-			file.read(reinterpret_cast<char*>(&data[i]), sizeof(data[i]));
+			file.read(reinterpret_cast<char*>(&data[i]), sizeof(data[0]));
 		}
-
-
-
 
 		std::cout << "Item's count in file '" << filename << "': " << total_items << std::endl;
 		std::cout << "  [" << data[0] << ", " << data[1] << ", " << data[2] << ", ... , "

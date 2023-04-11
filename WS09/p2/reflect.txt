@@ -1,0 +1,85 @@
+*****************************************************************************
+				Workshop-9 Reflection
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 01/04/2023
+
+Authenticity Declaration:
+I have done all the coding by myself and only copied the code that my
+professor provided to complete my workshops and assignments.
+*****************************************************************************
+
+-----------------------------------------------------------------------------
+In this workshop, I learned the following:
+- Handling (reading and writing) binary files
+- Processing partitioned data using multi-threading
+- Binding functions to its arguments for using multi-threading.
+-----------------------------------------------------------------------------
+
+Workshop 9 was based on the using the concept of multi-threading. Multi-threading programming is the concept that basically involves improving performance and responsiveness of an application. Multi-threaded applications involve performing multiple processes or tasks simultaneously within a single process itself. This involves using threads, which are nothing but a representation of a separate flow of execution independent of the main program thread. This allows the program to execute multiple tasks simultaneously, hence increasing its performance and responsivity.
+
+During this entire workshop, we were using binary files instead of using the usual text-files. Since the core purpose of this workshop was to understand how multi-threaded applications improve performance, it was important to note that binary files in this regard are more efficient than the text files. This is because binary files are quicker to process and are more compact than a text file. This was important because the amount of data was large (around 500000 numbers) which would've taken a lot of time to process had it been a text file. Additionally, binary files are more compatible than text files as these files use a standardized format recognizable by many programming languages and operating systems. 
+
+To use and handle a binary file in C++, we open the file using std::fstream with the flag std::ios::binary, as below:
+
+	std::fstream file(filename, std::ios::in | std::ios::binary);
+
+The above statement opens the file in binary mode represented by the variable filename for reading purposes. These flags are input/output operation flags that are used to handle files along with using the std::ios::binary flag that explicitely opens the file in binary mode to read content. In addition, reading a file in binary mode is different from using text files. While in the case of text-files, we simply use the extraction operator >>, for binary files, we use std::fstream::read function. An example is as this:
+
+	file.read(reinterpret_cast<char*>(&total_items), sizeof(total_items));
+
+Here file.read takes 2 parameters, one is the pointer to the buffer in which data is to be stored and the other one is the size in bytes to be read from the file. This statement is used to interpret the binary characters in the file. The reinterpret_cast<char*> for total_items is crucial since this read function requires a pointer to char* pointer. 
+
+This is exactly similar on howw we write content to a file in biinary mode. When we need to write to a file, we open the file using  std::ios::out | std::ios::binary flag combination and use the write function that writes the content to the file in binary mode. The reinterpret cast is again used for converting the address of the value to a char* pointer, to satisfy the function parameter data types mandatory for using the write function. 
+
+Moving further, we also implemented the logic of binding functions with its arguments. For instance, as per the instructions, we were supposed to bind the function computeAvgFactor and computeVarFactor with some of its arguments. To achieve this, I used the std::bind function with std::placeholders to bind the arguments as instructed:
+
+	auto Avgbinder = std::bind(computeAvgFactor, std::placeholders::_1, std::placeholders::_2, total_items, std::placeholders::_3);
+
+The std::bind function used here partially applies the computeAvgFactor function with one of its 4 arguments. The resulting function object is stored in Avgbinder for later use. The std::placeholders_1, std::placeholders_2 and std::placeholders_3 are simply placeholders for the 3 of the 4 arguments of computeAvgFactor which can be later passed to the function object to compute the average factor. The same logic was enforced for computation of the variance. 
+
+The binding would be important to create worker threads that execute the specific function with a specific set of arguments. By doing so, we can simply pass the resulting functor to the worker thread which leads to thread execution without requiring any synchronization or communications between the threads. This was also useful to implement deferred computations as binded functions can be later on passed to a different thread without requiring to pass the bound parameters again to the function. Last but not least, it results in a cleaner and easy to read code.
+
+And then comes the part where we implemented threading using the std::thread template class in C++ standard. This class is capable of defining objects that represent single thread of execution in a joinable or non-joinable state. For this workshop, in particular, we iused threads for executing the computeAvgFactor and the computeVarFactor for the large set of data. For this, we were supposed to create a collection of threads, and I used std::vector for that. The total data set was partitoned into multiple sets based on the number of threads used for execution. The statement below indicates the thread creation:
+
+	std::thread(Avgbinder, &data[p_indices[i]], total_items / num_threads, std::ref(averages[i]));
+
+In the above thread creation, Avgbinder, created using the std::bind is passed to the thread using all the parameters required (total_items was bound during std::bind, hence is not in this parameter list). This thread was created with different partitions of data varying according to the number of threads used for execution. The threads were then joined using the std::thread::join function by looping through the vector. And the average was calculated based on all the values stored in each element of the averages array. Another thing to note that averages[i] was passed as reference to the thread constructor using std::ref. This is because when arguments are passed to the thread's constructor, they are stored in the thread's internal storage as a copy; and since this element is modified by the computeAvgFactor function, it was important that std::ref was used to pass it as a reference to retain the modified value.
+
+There is visibly no difference in the execution times for all the threads at the first look  when 1, 2 or 4 threads are used to calculate average and variance. The times were:
+
+1 thread : 91 milliseconds
+2 threads: 88 milliseconds
+3 threads: 89 milliseconds
+
+However, by using
+
+	std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+
+in each of the loops inside the functions that calculate the variance and average, a significant time difference is noted. In my case, the execution times were as below:
+
+	std::this_thread::sleep_for(std::chrono::nanoseconds(1)); 
+
+1 thread : 311 milliseconds
+2 threads: 202 milliseconds
+3 threads: 152 milliseconds
+
+	std::this_thread::sleep_for(std::chrono::nanoseconds(10));
+
+1 thread : 311 milliseconds
+2 threads: 202 milliseconds
+3 threads: 152 milliseconds
+
+
+	std::this_thread::sleep_for(std::chrono::nanoseconds(50));
+
+1 thread : 298 milliseconds
+2 threads: 199 milliseconds
+3 threads: 143 milliseconds
+
+This clearly indicates that execution times improve when multi-threading is implemented.
+
+Overall, this workshop provided a good insight into the concept of multi-threading and the advantages of using multi-threading in performance centric applications.
