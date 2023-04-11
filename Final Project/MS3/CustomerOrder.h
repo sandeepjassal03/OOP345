@@ -1,6 +1,6 @@
 /*
 *****************************************************************************
-							Milestone-2
+							Milestone-3
 
 Full Name  : Sandeep Singh
 Student ID#: 162054217
@@ -49,7 +49,7 @@ namespace sdds
 		void deallocate();
 	public:
 		CustomerOrder();
-		CustomerOrder(std::string str);
+		CustomerOrder(const std::string str);
 		CustomerOrder(const CustomerOrder& src);
 		CustomerOrder& operator=(const CustomerOrder& src) = delete;
 		CustomerOrder(CustomerOrder&& src) noexcept;

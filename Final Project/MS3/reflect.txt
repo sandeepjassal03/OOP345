@@ -1,0 +1,26 @@
+/*
+*****************************************************************************
+				Project Reflection
+
+Full Name  : Sandeep Singh
+Student ID#: 162054217
+Email      : ssingh1224@myseneca.ca
+Section    : NAA
+Date       : 08/04/2023
+
+Authenticity Declaration:
+I confirm that I am the only author of this file
+and the content was created entirely by me.
+*****************************************************************************
+*/
+
+The project was very intuitive and it helped me clarify and refine my C++ concepts. I would like to bring to the notice that in Milestone 1 and Milestone 2, there was a need to add an extra space while printing data using size as stored in m_widthField like this:
+
+	os << std::left << std::setfill(' ') << std::setw(m_widthField + 1) << m_handledItem; (Station.cpp Line 99)
+
+	os << std::left << std::setw(m_widthField + 2) << std::setfill(' ') << m_lstItem[i]->m_itemName; (CustomerOrder.cpp Line 217)
+
+There might be a misplacement of the removeSpaces from token functionality that may cause this to happen.
+
+Overall, the project was interesting and I felt contented after successfully completing the project.
+

@@ -1,6 +1,6 @@
 /*
 *****************************************************************************
-							Milestone-2
+							Milestone-3
 
 Full Name  : Sandeep Singh
 Student ID#: 162054217
@@ -60,7 +60,7 @@ namespace sdds
 		m_cntItem = 0;
 		m_lstItem = nullptr;
 	}
-	CustomerOrder::CustomerOrder(std::string str)
+	CustomerOrder::CustomerOrder(const std::string str)
 	{
 		// Create a local instance of utilities
 		Utilities util;
